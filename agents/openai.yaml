@@ -1,0 +1,4 @@
+interface:
+  display_name: "Yoho Standard README"
+  short_description: "三种真实风格预览，生成清晰、美观且内容可信的中英双语 README"
+  default_prompt: "Use $yoho-standard-readme to redesign this project's README. Show three visual directions first, then produce English README.md and Chinese README.zh-CN.md."
