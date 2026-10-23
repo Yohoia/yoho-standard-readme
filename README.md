@@ -6,29 +6,33 @@ English · [简体中文](README.zh-CN.md)
 
 **Give your repository an introduction worth reading.**
 
-A Codex skill for accurate project introductions, deliberate visual design, and matching English / 简体中文 READMEs. It starts with your actual repository and shows three visual directions before completing the documents.
+A Codex skill for accurate project introductions, deliberate visual design, and matching English / 简体中文 READMEs. It investigates your repository, asks you to choose a visual direction, and completes the documents after your choice.
 
 [Quick start](#quick-start) · [Workflow](#workflow) · [Helper tools](#helper-tools) · [Verification](#verification)
 
-## Three directions. One choice.
+## Choose a direction first.
 
-Compare three real first-screen previews, each with a distinct composition, narrative emphasis, and chapter plan. Choose the direction that fits your project; the skill then completes English `README.md`, Chinese `README.zh-CN.md`, and any necessary supporting material.
+After checking the repository and its available assets, choose a style family for the README. If you are undecided or want to compare layouts, ask for three real first-screen previews with distinct compositions, narrative emphasis, and chapter plans. The skill then completes English `README.md`, Chinese `README.zh-CN.md`, and any necessary supporting material.
 
-Your existing READMEs stay in place while you compare. After your choice, the skill proceeds with writing and verification. Both editions retain equivalent facts, prerequisites, commands, parameters, and limitations, with natural prose in each language.
+Your existing READMEs stay in place while you choose. After your choice, the skill proceeds with writing and verification. Both editions retain equivalent facts, prerequisites, commands, parameters, and limitations, with natural prose in each language.
 
 ### Five style families
 
-Each run adapts three candidates from these starting points. The default trio includes Centered Brand Hero; you can request a different set.
+Choose a style directly from these families. The skill will explain which fit the project; request three previews when you want to compare options.
 
 | Style | First-screen emphasis |
 | --- | --- |
-| **Centered Brand Hero** | Centered logo → title → slogan → relevant badges/tags → useful links → brief introduction or real demo |
+| **Centered Brand Hero** | Optional existing logo → title → slogan → relevant badges/tags → useful links → brief introduction or real demo |
 | Engineering Quickstart | A clear task, copyable command or API call, and expected output |
 | Product Showcase | An authentic interface or output capture and the user workflow |
 | Editorial Overview | A restrained cover, the project's problem, and its approach |
 | Workflow Guide | A readable process or architecture diagram and the route to first use |
 
-The introduction can move above the badges when the project's story reads better that way. Centered Brand Hero returns the technical body to left-aligned, readable prose. Logos, badges, and homepage links depend on real assets and evidence; absent elements are omitted. The other candidates vary composition and reading priorities, with the project determining which families fit. See the [style recipes](references/visuals.md) for details.
+The introduction can move above the badges when the project's story reads better that way. Centered Brand Hero returns the technical body to left-aligned, readable prose. If the repository has no logo, the Hero uses the project name as text. Additional SVG diagrams or generated illustrations should come from the project's actual subject matter.
+
+### Badge tools and treatments
+
+Choose Shields.io (`flat`, `flat-square`, or `for-the-badge`), Badgen (classic or flat), or native GitHub Actions workflow badges where supported. Compare samples of the same verified content, delegate a matching treatment, or omit badges. Descriptive labels come from project facts; changing status comes from live sources. See the [style and asset recipes](references/visuals.md) for provider choices and validation.
 
 ## Shaped around your project
 
@@ -81,21 +85,21 @@ Once Codex has loaded the skill, open the repository you want to document and se
 
 ```text
 Use $yoho-standard-readme to redesign this project's README.
-Show three visual directions with chapter plans first.
-After I choose, complete README.md and README.zh-CN.md.
+Inspect the project, then ask me to choose a visual style before editing.
+Show three visual previews only if I ask to compare styles.
+Complete README.md and README.zh-CN.md after the choice.
 ```
 
-The skill investigates the project before proposing a design. Review the three previews, choose a direction, and let it complete the bilingual rewrite. Only missing facts that affect correctness need clarification.
+The skill checks the project and its assets before asking for a style choice. You can pick a family directly, request three previews for comparison, or ask the skill to recommend one. Only missing facts that affect correctness need clarification.
 
 ## Workflow
 
-1. **Establish facts.** Read source, configuration, examples, existing docs, and relevant project instructions. Keep an evidence note distinguishing execution, source support, and unresolved claims.
-2. **Explore directions.** Create exactly three project-specific first screens and chapter plans, with Markdown sources and rendered previews staged in scratch.
-3. **Choose.** Wait for your explicit design choice while preserving the existing READMEs.
-4. **Complete both editions.** Write the full introduction, first-use path, limits, and useful links. Add selected assets and deeper docs when needed.
-5. **Verify.** Check structure, actual usage, bilingual equivalence, and visual presentation separately. Hand off a concise record of completed checks and concrete gaps.
+1. **Establish facts and assets.** Read source, configuration, examples, existing docs, project instructions, and available logos, screenshots, diagrams, and badge sources. Keep an evidence note distinguishing execution, source support, and unresolved claims.
+2. **Choose a style.** Ask the user to pick a family, delegate the choice, or compare three previews before changing README or final asset files. If they request previews, wait for their selection before writing the final documents. Ask about badges only when they can show useful, verifiable project information.
+3. **Complete both editions.** Write the full introduction, first-use path, limits, and useful links. Use the existing logo or a text title, and create project-specific diagrams or illustrations when they help.
+4. **Verify.** Check structure, actual usage, bilingual equivalence, selected badge sources, and visual presentation. Hand off a concise record of completed checks and concrete gaps.
 
-Rendering and image generation are optional capabilities. When rendering is unavailable, candidates remain inspectable Markdown and are explicitly marked as unrendered. Existing assets, simple SVG, or Markdown can support the final design. Conceptual artwork never serves as evidence of an interface, feature, or benchmark.
+Rendering and image generation are optional capabilities. When rendering is unavailable, requested candidates remain inspectable Markdown and are explicitly marked as unrendered. Existing assets, simple SVG, or Markdown can support the final design. Conceptual artwork never serves as evidence of an interface, feature, or benchmark.
 
 ## What lands in your repository
 
