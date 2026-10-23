@@ -43,13 +43,17 @@ def visible_markdown(text):
     return visible, blocks, fence is not None
 
 
+def without_inline_code(text):
+    return re.sub(r"(?<!`)(`+)(?!`).*?(?<!`)\1(?!`)", "", text, flags=re.S)
+
+
 def inline_links(text, inherited=None):
     definitions = dict(inherited or {})
     definition = re.compile(r"^ {0,3}\[([^\]^][^\]]*)\]:\s*(<[^>]+>|\S+).*$", re.M)
     for match in definition.finditer(text):
         definitions[" ".join(match[1].split()).casefold()] = match[2].strip("<>")
     text = definition.sub("", text)
-    text = re.sub(r"(`+).*?\1", "", text, flags=re.S)
+    text = without_inline_code(text)
     links = [Link(match[1]) for match in re.finditer(r"<((?:https?://|mailto:)[^<>\s]+)>", text)]
     unresolved = []
     i = 0
@@ -154,7 +158,7 @@ class HtmlReferences(HTMLParser):
 def heading_anchors(text):
     visible, _, _ = visible_markdown(text)
     parser = HtmlReferences()
-    parser.feed(visible)
+    parser.feed(without_inline_code(visible))
     anchors, counts = set(parser.anchors), Counter()
     lines = visible.splitlines()
     headings = []
@@ -240,7 +244,7 @@ def audit(repo, documents, bilingual=True):
         if unclosed:
             issue(document, "error", "unclosed-fence", "A fenced code block is not closed")
         parser = HtmlReferences()
-        parser.feed(visible)
+        parser.feed(without_inline_code(visible))
         for severity, code, message in parser.issues:
             issue(document, severity, code, message)
         links, unresolved = inline_links(visible)

@@ -62,6 +62,23 @@ class ReadmeAuditTests(unittest.TestCase):
         self.append("README.md", "\n```md\n[Demo](missing.md)\n```\n\n`[Example](missing.md)`\n")
         self.assertEqual(self.run_audit()[0], 0)
 
+    def test_inline_html_examples_are_not_embedded_elements(self):
+        self.append("README.md", '\nLiteral examples: `<script>alert(1)</script>` and `` `<img src="missing.png">` ``.\n')
+        code, report = self.run_audit()
+        self.assertEqual((code, report["errors"]), (0, 0))
+
+    def test_inline_html_anchor_example_is_not_a_real_anchor(self):
+        self.append("README.md", '\nExample: `<a id="phantom"></a>`\n\n[Jump](#phantom)\n')
+        code, report = self.run_audit()
+        self.assertEqual(code, 1)
+        self.assertIn("missing-anchor", self.codes(report))
+
+    def test_unmatched_backtick_runs_do_not_hide_embedded_html(self):
+        self.append("README.md", '\n`` literal <script>alert(1)</script> ```\n')
+        code, report = self.run_audit()
+        self.assertEqual(code, 1)
+        self.assertIn("unsupported-html", self.codes(report))
+
     def test_empty_image_description_fails(self):
         self.write("assets/example.png", "fixture")
         self.append("README.md", "\n![](assets/example.png)\n")
