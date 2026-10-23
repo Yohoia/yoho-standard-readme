@@ -20,25 +20,28 @@
 
 ### 1. 安装技能
 
-需要支持本地技能的 Codex、Git 和 POSIX shell。
+使用支持本地技能的 Codex，选择以下任一方式安装。
+
+**方式 A · 通过 `npx` 安装**
+
+需要 Node.js 22.20 或更高版本、带有 `npx` 的 npm，以及 Git。在需要使用该技能的项目目录中运行：
 
 ```sh
-git clone https://github.com/Yohoia/yoho-standard-readme.git
-cd yoho-standard-readme
+npx skills add Yohoia/yoho-standard-readme --agent codex
 ```
 
-在仓库根目录执行，安装或更新七个运行文件：
+默认仅安装到当前项目；添加 `--global` 可让该技能在不同项目中使用。更多安装选项与 Agent 支持情况见 [Skills CLI 文档（英文）](https://skills.sh/docs/cli)。
 
-```sh
-readme_skill_dir="${CODEX_HOME:-$HOME/.codex}/skills/yoho-standard-readme"
-mkdir -p "$readme_skill_dir/agents" "$readme_skill_dir/references" "$readme_skill_dir/scripts"
-cp SKILL.md "$readme_skill_dir/SKILL.md"
-cp agents/openai.yaml "$readme_skill_dir/agents/openai.yaml"
-cp references/*.md "$readme_skill_dir/references/"
-cp scripts/audit_readme.py scripts/preview_readme.mjs "$readme_skill_dir/scripts/"
+**方式 B · 将 GitHub 链接交给 Agent 安装**
+
+向能够访问 GitHub 并安装本地技能的 Agent 发送仓库链接和安装请求：
+
+```text
+Install the yoho-standard-readme skill for Codex from:
+https://github.com/Yohoia/yoho-standard-readme
+The skill is at the repository root. Keep SKILL.md, agents/, references/,
+and scripts/ together in the installed skill directory.
 ```
-
-默认安装到 `~/.codex/skills/yoho-standard-readme`；设置了 `CODEX_HOME` 时使用对应位置。文件包括技能入口、Codex 界面元数据、三份参考资料和两份辅助脚本。
 
 ### 2. 在目标项目中使用
 
@@ -157,7 +160,7 @@ node --check scripts/preview_readme.mjs
 
 [验证记录（英文）](docs/verification.md)包含 26 项审计器 CLI 测试，以及覆盖 CLI、带翻译迁移的库、渲染不可用、文档与素材缺陷修复的隔离试用。修改技能决策时，还应在隔离目标项目中试用并检查实际产物；审计器测试不覆盖完整 README 改写流程。
 
-记录中的工具包括 Python 3.12.10、Marked 17.0.5、sanitize-html 2.18.1、Playwright 1.62.1 和已安装的 Chromium 浏览器。本项目未声明最低 Python/Node 版本支持策略，这些检查不能证明适用于所有项目或环境。
+记录中的工具包括 Python 3.12.10、Marked 17.0.5、sanitize-html 2.18.1、Playwright 1.62.1 和已安装的 Chromium 浏览器。辅助脚本未声明最低 Python/Node 版本支持策略，这些检查不能证明适用于所有项目或环境。
 
 本地预览不验证 GitHub 线上渲染、Camo 代理或 Mermaid 运行时。图像生成、远程图片与 URL 检查，以及新 Codex 会话中的技能发现，不属于已有验收通过项。
 

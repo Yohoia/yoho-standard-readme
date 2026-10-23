@@ -20,25 +20,28 @@ A Codex skill for developers who want their repository to be easier to understan
 
 ### 1. Install the skill
 
-You need Codex with local skill support, Git, and a POSIX shell.
+Use Codex with local skill support and choose either installation method.
+
+**Option A · Install with `npx`**
+
+Requires Node.js 22.20 or later, npm with `npx`, and Git. Run this from the project where you want to use the skill:
 
 ```sh
-git clone https://github.com/Yohoia/yoho-standard-readme.git
-cd yoho-standard-readme
+npx skills add Yohoia/yoho-standard-readme --agent codex
 ```
 
-From the checkout root, install or update the seven runtime files:
+The default scope is the current project. Add `--global` to make the skill available across projects. See the [Skills CLI documentation](https://skills.sh/docs/cli) for installation options and agent support.
 
-```sh
-readme_skill_dir="${CODEX_HOME:-$HOME/.codex}/skills/yoho-standard-readme"
-mkdir -p "$readme_skill_dir/agents" "$readme_skill_dir/references" "$readme_skill_dir/scripts"
-cp SKILL.md "$readme_skill_dir/SKILL.md"
-cp agents/openai.yaml "$readme_skill_dir/agents/openai.yaml"
-cp references/*.md "$readme_skill_dir/references/"
-cp scripts/audit_readme.py scripts/preview_readme.mjs "$readme_skill_dir/scripts/"
+**Option B · Ask your agent to install from GitHub**
+
+Send the repository URL and an installation request to an agent that can access GitHub and install local skills:
+
+```text
+Install the yoho-standard-readme skill for Codex from:
+https://github.com/Yohoia/yoho-standard-readme
+The skill is at the repository root. Keep SKILL.md, agents/, references/,
+and scripts/ together in the installed skill directory.
 ```
-
-The default destination is `~/.codex/skills/yoho-standard-readme`; the commands respect `CODEX_HOME` when set. The files include the skill entry point, Codex interface metadata, three references, and two helper scripts.
 
 ### 2. Use it in your project
 
@@ -155,7 +158,7 @@ node --check scripts/preview_readme.mjs
 
 The [verification record](docs/verification.md) documents 26 auditor CLI tests and isolated trials covering a CLI, a library with translation migration, unavailable rendering, and document/asset defect repair. For changes to the skill's decisions, also try an isolated target project and inspect its artifacts; the auditor tests do not cover complete README redesigns.
 
-Recorded tools include Python 3.12.10, Marked 17.0.5, sanitize-html 2.18.1, Playwright 1.62.1, and an installed Chromium browser. No minimum Python/Node support policy is declared. These checks do not establish support for every project or environment.
+Recorded tools include Python 3.12.10, Marked 17.0.5, sanitize-html 2.18.1, Playwright 1.62.1, and an installed Chromium browser. The helper scripts do not declare a minimum Python/Node support policy. These checks do not establish support for every project or environment.
 
 Local previews do not verify GitHub's live renderer, Camo proxy, or Mermaid runtime. Image generation, remote image/URL checks, and skill discovery in a new Codex session were not part of the recorded acceptance.
 
