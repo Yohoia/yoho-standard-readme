@@ -16,6 +16,20 @@ Compare three real first-screen previews, each with a distinct composition, narr
 
 Your existing READMEs stay in place while you compare. After your choice, the skill proceeds with writing and verification. Both editions retain equivalent facts, prerequisites, commands, parameters, and limitations, with natural prose in each language.
 
+### Five style families
+
+Each run adapts three candidates from these starting points. The default trio includes Centered Brand Hero; you can request a different set.
+
+| Style | First-screen emphasis |
+| --- | --- |
+| **Centered Brand Hero** | Centered logo → title → slogan → relevant badges/tags → useful links → brief introduction or real demo |
+| Engineering Quickstart | A clear task, copyable command or API call, and expected output |
+| Product Showcase | An authentic interface or output capture and the user workflow |
+| Editorial Overview | A restrained cover, the project's problem, and its approach |
+| Workflow Guide | A readable process or architecture diagram and the route to first use |
+
+The introduction can move above the badges when the project's story reads better that way. Centered Brand Hero returns the technical body to left-aligned, readable prose. Logos, badges, and homepage links depend on real assets and evidence; absent elements are omitted. The other candidates vary composition and reading priorities, with the project determining which families fit. See the [style recipes](references/visuals.md) for details.
+
 ## Shaped around your project
 
 The reading path follows what a developer needs to understand and try first.
@@ -29,7 +43,13 @@ The reading path follows what a developer needs to understand and try first.
 | Skill or developer tool | The task and the artifact it produces | Installation, invocation, workflow, tool requirements |
 | Research or data project | The question and a reproducible result | Data access, method, assumptions, reproducibility |
 
-These are content decisions, not a fixed chapter template. Existing translations, legal notices, attribution, and useful documentation are preserved. New deep docs and visuals are added only when they help the reader.
+### A consistent content baseline
+
+Every final README covers seven core roles: **Hero/identity, About, Features, Getting started, Usage, Documentation and limitations, and License status**. Headings can be merged or reordered to fit the project. Getting started includes prerequisites, installation or access, required configuration, and a first successful result.
+
+The [editable content template](references/content.md) adapts [Best-README-Template](https://github.com/othneildrew/Best-README-Template). Built with, roadmap, contributing, support, and acknowledgments are added where supported; required notices and credits are always retained. [awesome-readme](https://github.com/matiassingers/awesome-readme) provides additional examples and tools for presentation. The references supply structure and inspiration; project claims come from the target repository.
+
+Existing translations, legal notices, attribution, and useful documentation are preserved. New deep docs and visuals are added only when they help the reader.
 
 ## Quick start
 

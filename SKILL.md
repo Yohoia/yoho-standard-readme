@@ -13,11 +13,11 @@ Read the target repository's agent instructions, current README and translations
 
 Keep a compact evidence note in the project's scratch area: important claim, source, and whether it was executed, corroborated by code, or remains unresolved. Existing prose can be stale. Verify installation and usage against the current project. External repositories inform presentation, not the target project's capabilities.
 
-Read [content.md](references/content.md) to choose the content structure and manage the bilingual rewrite. Resolve gaps that block a truthful introduction or first successful use. Ask only for facts you cannot establish yourself; omit optional unsupported claims. Preserve legal notices, attribution, and important existing instructions.
+Read [content.md](references/content.md) for the baseline content template, project-type adaptations, and bilingual rewrite. Resolve gaps that block a truthful introduction or first successful use. Ask only for facts you cannot establish yourself; omit optional unsupported claims. Preserve legal notices, attribution, and important existing instructions.
 
 ## Offer three visual directions
 
-Read [visuals.md](references/visuals.md). Produce exactly three genuinely distinct first-screen previews using the actual project name, value proposition, and available evidence. Vary composition, narrative emphasis, and asset treatment; recoloring one layout is insufficient. Explain each direction's intended audience, trade-off, and proposed chapter order.
+Read [visuals.md](references/visuals.md) for the style repertoire and centered brand Hero recipe. Produce exactly three genuinely distinct first-screen previews using the actual project name, value proposition, and available evidence. Include the centered brand Hero in the default trio; follow an explicit user request for a different set. Vary composition, narrative emphasis, and asset treatment; recoloring one layout is insufficient. Explain each direction's intended audience, trade-off, and proposed chapter order using the baseline content coverage.
 
 Use the target project's existing scratch convention; otherwise stage candidates under `.scratch/readme-previews/`. Each candidate has a Markdown source and the assets needed to render it. The review preview may show the English first screen; describe the choices in the user's language and retain room for the Chinese counterpart.
 

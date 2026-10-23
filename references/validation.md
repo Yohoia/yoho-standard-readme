@@ -39,6 +39,7 @@ Preview content is sanitized and served only from the target repository. Remote 
 
 ## Content and bilingual review
 
+- Check the seven core roles in [the content template](content.md), allowing merged headings. Remove template placeholders and empty optional chapters; preserve required notices.
 - Compare material claims against the evidence note and actual source files.
 - Walk the shortest complete install/use example and report what actually ran. Identify missing credentials, infrastructure, or tools accurately.
 - Check English/Chinese coverage, example parameters, status, limitations, language links, and destinations. Different wording and heading counts can be legitimate; contradictory behavior cannot.
@@ -48,5 +49,7 @@ Preview content is sanitized and served only from the target repository. Remote 
 ## Visual acceptance
 
 Inspect desktop and mobile first screens in light/dark themes. Confirm the project identity, purpose, and next action are visible; screenshots depict the actual product; images load; essential labels remain readable; prose reflows; and long code/tables scroll within their own containers rather than widening the page. Inspect the complete selected document as well as its first screen. Read Chinese labels at the actual mobile size.
+
+For a centered brand Hero, inspect the actual alignment, title/slogan wrapping, badge/link rows, theme contrast, and transition to left-aligned technical content. A missing logo, badge, homepage, or screenshot should yield an intentional omission or selected design asset, never a broken placeholder or an unsupported claim.
 
 Automated image-loading and overflow checks help locate defects but do not judge contrast, composition, visual quality, or factual truth. Missing browser/image tools remain verification gaps. State them explicitly; do not label unperformed checks as passed.
