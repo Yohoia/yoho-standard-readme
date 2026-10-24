@@ -29,14 +29,14 @@ class SkillPackageTests(unittest.TestCase):
         self.root = Path(self.directory.name).resolve()
         self.repo = self.root / "source"
         self.repo.mkdir()
-        self.write("SKILL.md", "# Fixture skill\n\n[Content](references/content.md)\n"
+        self.write("SKILL.md", "---\nname: fixture-skill\nmetadata:\n  version: \"1.0.0\"\n---\n\n# Fixture skill\n\n[Content](references/content.md)\n"
                    "[Visuals](references/visuals.md)\n[Badges](references/badges.md)\n"
                    "[Validation](references/validation.md)\n")
         self.write("references/content.md", "# Content\n\n[Rules](visuals.md#rules)\n")
         self.write("references/visuals.md", "# Visuals\n\n## Rules\n\n[Preview](../scripts/preview_readme.mjs)\n\n[Badges](badges.md)\n")
         self.write("references/badges.md", "# Badges\n\n[Visual rules](visuals.md#rules)\n")
         self.write("references/validation.md", "# Validation\n\n[Content](content.md)\n")
-        self.write("agents/openai.yaml", 'interface:\n  display_name: "Fixture skill"\n')
+        self.write("agents/openai.yaml", 'version: "1.0.0"\ninterface:\n  display_name: "Fixture skill"\n')
         self.write("scripts/preview_readme.mjs", '// Fixture preview\nconsole.log("preview");\n')
         shutil.copyfile(CHECKOUT / "scripts/audit_readme.py", self.repo / "scripts/audit_readme.py")
         self.write("docs/verification.md", "# Development-only verification\n")
@@ -66,6 +66,7 @@ class SkillPackageTests(unittest.TestCase):
         result = self.run_package()
         self.assertEqual(result.returncode, 0, result.stderr)
         report = json.loads(result.stdout)
+        self.assertEqual(report["version"], "1.0.0")
         actual = {str(path.relative_to(self.output)) for path in self.output.rglob("*") if path.is_file()}
         self.assertEqual(actual, EXPECTED_FILES)
         self.assertEqual(set(report["files"]), EXPECTED_FILES)
@@ -77,6 +78,22 @@ class SkillPackageTests(unittest.TestCase):
             source, installed = (self.repo / relative).read_bytes(), (self.output / relative).read_bytes()
             self.assertEqual(installed, source)
             self.assertEqual(report["files"][relative], hashlib.sha256(source).hexdigest())
+        self.assert_no_staging()
+
+    def test_mismatched_version_declarations_reject_package(self):
+        self.write("agents/openai.yaml", 'version: "1.0.1"\ninterface:\n  display_name: "Fixture skill"\n')
+        result = self.run_package()
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("Skill version declarations do not match", result.stderr)
+        self.assertFalse(self.output.exists())
+        self.assert_no_staging()
+
+    def test_invalid_skill_version_rejects_package(self):
+        self.write("SKILL.md", "---\nname: fixture-skill\nmetadata:\n  version: \"1.0\"\n---\n\n# Fixture skill\n")
+        result = self.run_package()
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("Valid semantic version is missing from SKILL.md frontmatter", result.stderr)
+        self.assertFalse(self.output.exists())
         self.assert_no_staging()
 
     def test_empty_existing_output_is_allowed(self):

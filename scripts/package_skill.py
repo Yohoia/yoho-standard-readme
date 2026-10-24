@@ -5,11 +5,15 @@ import argparse
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import shutil
 import subprocess
 import sys
 import tempfile
+
+
+SEMANTIC_VERSION_PATTERN = r"\d+\.\d+\.\d+"
 
 
 # This is the runtime contract. Add a path here when a runtime file is added,
@@ -44,6 +48,43 @@ def _reject_symlink_path(root, relative):
         current = current / part
         if current.is_symlink():
             raise PackageError(f"Runtime source path must not contain symlinks: {relative}")
+
+
+def _declared_version(path, context):
+    text = path.read_text(encoding="utf-8")
+    if path.name == "SKILL.md":
+        lines = text.splitlines()
+        if not lines or lines[0].strip() != "---":
+            raise PackageError(f"SKILL.md frontmatter is missing; cannot read {context}")
+        try:
+            frontmatter_end = lines[1:].index("---") + 1
+        except ValueError as error:
+            raise PackageError(f"SKILL.md frontmatter is not closed; cannot read {context}") from error
+        text = "\n".join(lines[1:frontmatter_end])
+        match = re.search(
+            rf"(?m)^metadata:\n(?:  [^\n]*\n)*?  version:\s*[\"']?(?P<version>{SEMANTIC_VERSION_PATTERN})[\"']?\s*$",
+            text,
+        )
+    else:
+        match = re.search(
+            rf"(?m)^version:\s*[\"']?(?P<version>{SEMANTIC_VERSION_PATTERN})[\"']?\s*$", text
+        )
+    if not match:
+        raise PackageError(f"Valid semantic version is missing from {context}")
+    return match.group(1)
+
+
+def _skill_version(repo):
+    skill_version = _declared_version(repo / "SKILL.md", "SKILL.md frontmatter")
+    interface_version = _declared_version(
+        repo / "agents/openai.yaml", "agents/openai.yaml interface metadata"
+    )
+    if skill_version != interface_version:
+        raise PackageError(
+            "Skill version declarations do not match: "
+            f"SKILL.md has {skill_version}; agents/openai.yaml has {interface_version}"
+        )
+    return skill_version
 
 
 def _output_path(raw_out, repo):
@@ -94,6 +135,8 @@ def build_package(repo, raw_out=None):
                 raise PackageError(
                     f"Runtime file is missing: {relative}. Add required runtime files to RUNTIME_FILES."
                 )
+
+        version = _skill_version(repo)
 
         stage = Path(tempfile.mkdtemp(prefix=".yoho-skill-stage-", dir=output.parent))
         hashes = {}
@@ -146,6 +189,7 @@ def build_package(repo, raw_out=None):
         stage = None
         published = True
         return {
+            "version": version,
             "source": str(repo),
             "output": str(output),
             "files": hashes,

@@ -1,6 +1,8 @@
 ---
 name: yoho-standard-readme
 description: Rewrite and visually redesign project READMEs with an upfront style choice, evidence-based assets, and synchronized English and Chinese editions. Use for comprehensive GitHub README creation or overhaul, including requests to 美化 README or improve project introductions. For standalone image assets, use a dedicated asset workflow.
+metadata:
+  version: "1.0.0"
 ---
 
 # Yoho Standard README

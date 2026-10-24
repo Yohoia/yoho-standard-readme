@@ -1,3 +1,4 @@
+version: "1.0.0"
 interface:
   display_name: "Yoho Standard README"
   short_description: "先选择视觉风格，再生成可信的中英双语 README"

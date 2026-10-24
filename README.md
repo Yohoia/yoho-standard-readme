@@ -163,7 +163,7 @@ Build a verified runtime copy from this checkout:
 python3 scripts/package_skill.py
 ```
 
-The command creates a unique OS temporary directory and reports its path, source-file hashes and packaged documentation audit. Use `--out /existing/parent/new-package` for a chosen new or empty directory. It verifies the copied files and local references before publishing the package; existing nonempty destinations are preserved. The runtime file list lives in the packaging script. Tests, scratch artifacts and development-only documentation stay in the checkout.
+The command creates a unique OS temporary directory and reports its version, path, source-file hashes and packaged documentation audit. It verifies that `SKILL.md` and `agents/openai.yaml` declare the same semantic version, and rejects a package when they disagree. Use `--out /existing/parent/new-package` for a chosen new or empty directory. It verifies the copied files and local references before publishing the package; existing nonempty destinations are preserved. The runtime file list lives in the packaging script. Tests, scratch artifacts and development-only documentation stay in the checkout.
 
 From the checkout, run the auditor and preview CLI tests and the preview helper's syntax check:
 

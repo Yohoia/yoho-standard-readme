@@ -55,9 +55,9 @@ The repository's own bilingual README summaries also passed structural review an
 
 ## Skill runtime package (2026-10-24)
 
-The development packaging helper now maintains the runtime file list, stages a real installable copy, compares its SHA256 values with the selected source, and runs the copied auditor against every packaged Markdown document before publication. Runtime references no longer depend on this development-only record. A real package from this checkout passed with zero errors and warnings.
+The development packaging helper now maintains the runtime file list, stages a real installable copy, compares its SHA256 values with the selected source, verifies the declared skill version, and runs the copied auditor against every packaged Markdown document before publication. Runtime references no longer depend on this development-only record. A real package from this checkout reported version `1.0.0` and passed with zero errors and warnings.
 
-Eighteen process-level CLI tests cover copied contents and hashes, packaged Markdown/HTML references and anchors, omitted runtime dependencies, missing files, unique temporary output, new or empty explicit output, preservation of existing data, source/output path separation, symlinks and cleanup after failure. This validates a local runtime copy; it does not establish dependency availability, npx installation or skill discovery in a new session.
+Twenty process-level CLI tests cover copied contents and hashes, packaged Markdown/HTML references and anchors, omitted runtime dependencies, missing files, unique temporary output, new or empty explicit output, preservation of existing data, source/output path separation, version mismatch and invalid-version rejection, symlinks and cleanup after failure. This validates a local runtime copy; it does not establish dependency availability, npx installation or skill discovery in a new session.
 
 ## Badge catalog integration (2026-10-24)
 
