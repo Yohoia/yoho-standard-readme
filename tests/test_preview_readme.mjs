@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import fs from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -120,4 +120,58 @@ test('a missing local image in the README body reports a capture issue', { skip:
   assert.equal(report.capture_mode, 'full-page');
   assert.equal(report.candidates[0].views.length, 4);
   for (const view of report.candidates[0].views) assert.deepEqual(view.broken_images, ['/repo/assets/missing.png']);
+});
+
+test('delayed local images and system-font text are ready in all Chromium views', { skip: browserSkip || (process.platform === 'win32' ? 'Named-pipe fixture requires mkfifo.' : false), timeout: 90000 }, async t => {
+  const { root, repo } = await fixture(t, '# 图片与字体就绪 / Image readiness\n\n![Delayed local image](assets/delayed.svg)\n\n中英文正文使用预览器的系统字体。 Local system-font text remains readable.\n');
+  const fifo = path.join(repo, 'assets', 'delayed.svg');
+  const made = spawnSync('mkfifo', [fifo], { encoding: 'utf8' });
+  assert.equal(made.error, undefined, made.error?.message);
+  assert.equal(made.status, 0, made.stderr);
+  const delivered = path.join(root, 'delivered.json');
+  const writer = spawn(process.execPath, ['--input-type=module', '-e', `
+    import fs from 'node:fs/promises';
+    const [fifo, delivered] = process.argv.slice(1);
+    const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="120"><rect width="320" height="120" fill="#1769aa"/></svg>';
+    for (let index = 0; index < 4; index++) {
+      const file = await fs.open(fifo, 'w');
+      await new Promise(resolve => setTimeout(resolve, 350));
+      await file.writeFile(svg);
+      await file.close();
+    }
+    await fs.writeFile(delivered, JSON.stringify({ requests: 4, delay_ms: 350 }));
+  `, fifo, delivered], { stdio: ['ignore', 'ignore', 'pipe'] });
+  let writerStderr = '';
+  writer.stderr.on('data', chunk => { writerStderr += chunk; });
+  const writerDone = new Promise((resolve, reject) => {
+    writer.once('error', reject);
+    writer.once('exit', (code, signal) => resolve({ code, signal }));
+  });
+  t.after(async () => { if (writer.exitCode === null) writer.kill('SIGKILL'); await writerDone; });
+  const out = path.join(root, 'delayed-image');
+  const result = run(...browserArgs(repo, out), '--full-page', 'README.md');
+  if (result.status !== 0) writer.kill('SIGKILL');
+  const writerResult = await writerDone;
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.deepEqual(writerResult, { code: 0, signal: null }, writerStderr);
+  assert.deepEqual(JSON.parse(await fs.readFile(delivered, 'utf8')), { requests: 4, delay_ms: 350 });
+  const { report } = await readCapture(out);
+  assert.equal(report.status, 'ready-for-human-review');
+  assert.equal(report.candidates[0].views.length, 4);
+  for (const view of report.candidates[0].views) {
+    assert.deepEqual(view.broken_images, []);
+    assert.equal(view.page_overflow, false);
+    assert.ok(view.visible_text_length > 60);
+    assert.equal((await pngDimensions(path.join(out, view.screenshot))).width, view.width);
+  }
+});
+
+test('browser launch failure closes the local preview server and exits', { skip: browserSkip, timeout: 90000 }, async t => {
+  const { root, repo } = await fixture(t, '# Target project\n\nLocal content.\n');
+  const out = path.join(root, 'failed-launch');
+  const result = run(...browserArgs(repo, out), '--browser', path.join(root, 'missing-browser'), 'README.md');
+  assert.equal(result.status, 2);
+  assert.match(result.stderr, /Preview failed:.*[Ll]aunch/);
+  assert.equal(result.stdout, '');
+  await assert.rejects(fs.access(path.join(out, 'report.json')), { code: 'ENOENT' });
 });

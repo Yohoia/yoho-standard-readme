@@ -66,7 +66,7 @@ These are visual directions, not fixed page templates. The skill adapts their co
 | --- | --- |
 | **Centered Brand Hero** | A text title or existing logo, slogan, useful links, and a compact introduction |
 | **Engineering Quickstart** | A real command or API call and its expected result |
-| **Product Showcase** | An authentic interface or output capture and a user workflow |
+| **Product Showcase** | An overview capture and a small gallery of real product tasks or capabilities |
 | **Editorial Overview** | A restrained cover, the problem, and the project's approach |
 | **Workflow Guide** | A readable process or architecture diagram and a route to first use |
 
@@ -76,7 +76,9 @@ Choose a family directly or ask the skill to recommend one. Request three first-
 
 The skill reuses a verified project logo. Without one, it uses the project name as text. Diagrams and generated illustrations follow the project's actual subject matter; conceptual artwork is identified as such and never stands in for a real interface or performance evidence.
 
-Verified primary-stack technology badges are added automatically when a working provider can represent them. Live status badges depend on useful, maintained data sources. Their presentation follows the selected visual style.
+Product Showcase includes a product screenshot workflow: choose a lead image and a few distinct feature or task captures, reuse verified assets or capture the running product, and place the images with short explanations. Other styles may use a small screenshot section where useful. The image count follows the available evidence; projects without a real interface or visual output favor another suitable direction. Product captures and README layout previews are checked separately.
+
+Verified primary-stack technology badges are added automatically when a working provider can represent them. Live status badges depend on useful, maintained data sources. Provider calls are centralized in the badge catalog, and presentation follows the selected visual style.
 
 This repository's cover is conceptual artwork; it has no separate logo or CI, coverage, release, or license badge sources.
 
@@ -145,12 +147,23 @@ Full commands and checking boundaries: [validation guide](references/validation.
 | [agents/openai.yaml](agents/openai.yaml) | Codex interface metadata and default prompt |
 | [references/content.md](references/content.md) | Content baseline, evidence, and bilingual decisions |
 | [references/visuals.md](references/visuals.md) | Style selection, preview, asset, and badge rules |
+| [references/badges.md](references/badges.md) | Direct Shields, Badgen, GitHub Actions, and dynamic-SVG recipes |
 | [references/validation.md](references/validation.md) | Helper usage and acceptance boundaries |
 | [docs/verification.md](docs/verification.md) | Recorded tests and isolated workflow trials |
+| [scripts/package_skill.py](scripts/package_skill.py) | Build and verify a self-contained skill runtime copy |
 | [tests/test_audit_readme.py](tests/test_audit_readme.py) | Auditor CLI regression tests |
 | [tests/test_preview_readme.mjs](tests/test_preview_readme.mjs) | Preview CLI and optional Chromium integration tests |
+| [tests/test_package_skill.py](tests/test_package_skill.py) | Runtime-package CLI and reference-closure tests |
 
 ### Verification and development
+
+Build a verified runtime copy from this checkout:
+
+```sh
+python3 scripts/package_skill.py
+```
+
+The command creates a unique OS temporary directory and reports its path, source-file hashes and packaged documentation audit. Use `--out /existing/parent/new-package` for a chosen new or empty directory. It verifies the copied files and local references before publishing the package; existing nonempty destinations are preserved. The runtime file list lives in the packaging script. Tests, scratch artifacts and development-only documentation stay in the checkout.
 
 From the checkout, run the auditor and preview CLI tests and the preview helper's syntax check:
 

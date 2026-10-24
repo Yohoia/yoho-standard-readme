@@ -54,6 +54,28 @@ function typography(theme) {
   return `:root{color-scheme:${theme}}*{box-sizing:border-box}body{margin:0;background:${dark ? '#0d1117' : '#ffffff'};color:${dark ? '#e6edf3' : '#1f2328'};font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC",sans-serif;letter-spacing:0}article{max-width:964px;margin:auto;padding:28px 32px;overflow-wrap:break-word}h1,h2,h3,h4,h5,h6{line-height:1.25;margin:24px 0 16px;font-weight:600}h1{font-size:32px}h2{font-size:24px}h1,h2{padding-bottom:8px;border-bottom:1px solid ${dark ? '#30363d' : '#d1d9e0'}}p,ul,ol,pre,table,blockquote{margin:0 0 16px}li+li{margin-top:4px}a{color:${dark ? '#58a6ff' : '#0969da'};text-decoration:none}img{max-width:100%;height:auto;vertical-align:middle}pre{padding:16px;background:${dark ? '#161b22' : '#f6f8fa'};border-radius:6px;overflow-x:auto;max-width:100%;font-size:13px;line-height:1.5;overflow-wrap:normal}code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:85%;background:${dark ? '#30363d' : '#eff1f3'};padding:2px 5px;border-radius:4px}pre code{padding:0;background:transparent;font-size:100%}table{display:block;max-width:100%;overflow-x:auto;border-collapse:collapse}td,th{padding:6px 13px;border:1px solid ${dark ? '#30363d' : '#d1d9e0'}}blockquote{padding:0 16px;border-left:4px solid ${dark ? '#30363d' : '#d1d9e0'};color:${dark ? '#9198a1' : '#59636e'}}summary{cursor:pointer}hr{border:0;border-top:1px solid ${dark ? '#30363d' : '#d1d9e0'};margin:24px 0}@media(max-width:480px){article{padding:16px}h1{font-size:28px}h2{font-size:22px}}`;
 }
 
+async function captureView(page, url, screenshot, fullPage) {
+  const deadline = performance.now() + 20000;
+  const remaining = () => Math.max(1, Math.ceil(deadline - performance.now()));
+  await page.goto(url, { waitUntil: 'load', timeout: remaining() });
+  await page.evaluate(async timeout => {
+    let timer;
+    try {
+      await Promise.race([
+        Promise.all([document.fonts.ready, ...[...document.images].map(img => img.decode().catch(() => {}))]),
+        new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('Timed out waiting for local images and fonts')), timeout); }),
+      ]);
+    } finally { clearTimeout(timer); }
+  }, remaining());
+  const inspection = await page.evaluate(() => ({
+    page_overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+    broken_images: [...document.images].filter(img => !img.complete || img.naturalWidth === 0).map(img => img.getAttribute('src')),
+    visible_text_length: document.querySelector('article').innerText.trim().length,
+  }));
+  await page.screenshot({ path: screenshot, fullPage });
+  return inspection;
+}
+
 async function main() {
   const args = options(process.argv.slice(2));
   if (!args) { process.stdout.write(`${help}\n`); return; }
@@ -140,22 +162,16 @@ async function main() {
           try {
             await context.route('**/*', route => new URL(route.request().url()).origin === origin ? route.continue() : route.abort());
             const page = await context.newPage();
-            await page.goto(`${origin}/__preview__/${index}?theme=${theme}`, { waitUntil: 'networkidle', timeout: 20000 });
-            const inspection = await page.evaluate(() => ({
-              page_overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
-              broken_images: [...document.images].filter(img => !img.complete || img.naturalWidth === 0).map(img => img.getAttribute('src')),
-              visible_text_length: document.querySelector('article').innerText.trim().length,
-            }));
             const filename = `${candidate.slug}-${viewport.name}-${theme}.png`;
-            await page.screenshot({ path: path.join(args.out, filename), fullPage: args.fullPage });
+            const inspection = await captureView(page, `${origin}/__preview__/${index}?theme=${theme}`, path.join(args.out, filename), args.fullPage);
             candidate.views.push({ viewport: viewport.name, width: viewport.width, height: viewport.height, theme, screenshot: filename, ...inspection });
           } finally { await context.close(); }
         }
       }
     }
   } finally {
-    if (browser) await browser.close();
-    await new Promise(resolve => server.close(resolve));
+    try { if (browser) await browser.close(); }
+    finally { await new Promise(resolve => server.close(resolve)); }
   }
   const report = {
     renderer: 'Local sanitized GFM approximation; not a check on GitHub itself',

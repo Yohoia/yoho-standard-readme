@@ -85,11 +85,21 @@ The baseline adapts [Best-README-Template](https://github.com/othneildrew/Best-R
 
 ## Evidence and uncertainty
 
-Keep evidence notes outside the published README unless the source benefits readers. A short table is sufficient:
+Keep one compact evidence note in the project's scratch area and reuse its checked facts when writing and reviewing both editions. Publish source links in the README only when they help readers. A short table is sufficient:
 
 | Claim or instruction | Source | Confidence/check |
 | --- | --- | --- |
 | Actual capability or command | File, symbol, example, or official source | Executed / supported by source / unresolved |
+
+Group important first-use facts by task so prerequisites, actions and results stay together:
+
+- Starting conditions: required tools, setup, input or initial state.
+- Exact command or action, observed result, and whether it was executed or only supported by source.
+- Adoption-relevant limits and what the check leaves unverified.
+
+Capture only facts that matter to the target; simple claims can stay in the table. Reuse the selected asset's existing source and capture record. Add English/Chinese coverage locations when the correspondence is unclear, rather than tracking every sentence or requiring empty fields.
+
+During bilingual review, follow the same task through each edition: conditions, action, result and limits must agree. If a source changes, an entry conflicts, or a needed fact is missing, revisit that source and update the note and affected prose in both editions. The note directs verification; current source and observed behavior remain authoritative.
 
 Trace each badge to a real source: project files for descriptive primary-stack technology badges, or a repository URL, workflow, package, license, or maintained data source for status badges. Use the [badge decision rules](visuals.md#badge-decisions-and-tools) for selection and presentation; a provider cannot establish an unsupported claim. Trace package names, versions, prerequisites, and flags to manifests or implementations. Benchmarks require a real method and measured result. Logos, customer claims, sponsorship, production-readiness, and compatibility are not decorative filler.
 
@@ -99,7 +109,7 @@ Run an appropriate quick-start example in a suitable local or temporary environm
 
 Always make `README.md` English and `README.zh-CN.md` Simplified Chinese. Add reciprocal language links near the top. Inventory existing translations before replacing anything; preserve useful technical details and original legal/credit wording. Update language-switch links and affected documentation references when migrating names. Preserve other language editions and explain any additional migration that cannot be completed safely within the documentation scope.
 
-Translate explanations and captions, not identifiers, package names, command flags, paths, or output that the program actually emits. Both editions need the same material facts, feature status, prerequisites, parameters, warnings, and useful destinations. Adapt heading text naturally and regenerate local anchors for each edition. Use identical runnable code when the task is identical; explain an intentional locale-specific difference in the evidence note.
+Translate explanations and captions, not identifiers, package names, command flags, paths, or output that the program actually emits. Both editions need the same material facts, feature status, prerequisites, parameters, warnings, and useful destinations. Adapt heading text naturally and regenerate local anchors for each edition. Use identical runnable code when the task is identical; explain an intentional locale-specific difference in the [evidence note](#evidence-and-uncertainty).
 
 New deep docs should follow the repository's language conventions. A shared reference can remain in its original language if both READMEs identify it accurately. Do not imply a destination is translated when it is not.
 

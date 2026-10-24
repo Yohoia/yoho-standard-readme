@@ -1,6 +1,6 @@
 # Verification record
 
-Workflow trials were verified on 2026-10-23; document-analysis and preview-helper checks were rerun on 2026-10-24. This records observed behavior and its limits; it is not a compatibility guarantee or an automated visual regression suite.
+Workflow trials were verified on 2026-10-23; document-analysis, preview-helper, product screenshot workflow, and badge-catalog checks were performed on 2026-10-24. This records observed behavior and its limits; it is not a compatibility guarantee or an automated visual regression suite.
 
 ## Workflow trials
 
@@ -45,13 +45,33 @@ Process-level tests exercised the actual CLI and Chromium: help and argument err
 
 Both repository README editions were also captured in desktop/mobile and light/dark views: eight first-screen and eight full-page PNGs. Automatic checks reported no broken images, empty content or page overflow. Full-page reports remove only the uncaptured-body limitation; human visual review, factual and bilingual review, external resources and Mermaid rendering remain unperformed checks. These captures do not rerun the isolated workflow trials or establish equivalence to GitHub's live renderer.
 
+## Product screenshot workflow (2026-10-24)
+
+Product Showcase now has a style-specific screenshot workflow in [the visual reference](../references/visuals.md#product-showcase-recipe). Its trial used an isolated, runnable two-page Task Board fixture with this direction already selected. It captured the actual task overview and the result of clicking Mark as done in Chromium. Those two images told the fixture's story, so no extra screenshot quota was imposed. Source routes, actions, original captures and verification results remain in local scratch evidence.
+
+Both fixture README editions reused the same PNGs with equivalent captions and localized alt text. The task link, completion confirmation and documented refresh reset were exercised. The documented static-server approach served both pages; the browser and test servers were closed afterwards. Structural review reported zero errors and warnings. Eight full-page desktop/mobile, light/dark README views had no broken images, overflow or empty content. Visual inspection at a 360px README viewport confirmed that task titles, the Completed button and the completion message remained readable; first-use links and instructions remained text.
+
+The repository's own bilingual README summaries also passed structural review and produced eight full-page views without automatic image-loading or overflow defects. Product-page capture and README rendering were separate operations; the preview helper still captures only README layout. This trial used a test fixture rather than a public or authenticated product, and does not verify another project's setup, UI language support or capture suitability. GitHub's live renderer was not checked.
+
+## Skill runtime package (2026-10-24)
+
+The development packaging helper now maintains the runtime file list, stages a real installable copy, compares its SHA256 values with the selected source, and runs the copied auditor against every packaged Markdown document before publication. Runtime references no longer depend on this development-only record. A real package from this checkout passed with zero errors and warnings.
+
+Eighteen process-level CLI tests cover copied contents and hashes, packaged Markdown/HTML references and anchors, omitted runtime dependencies, missing files, unique temporary output, new or empty explicit output, preservation of existing data, source/output path separation, symlinks and cleanup after failure. This validates a local runtime copy; it does not establish dependency availability, npx installation or skill discovery in a new session.
+
+## Badge catalog integration (2026-10-24)
+
+The current awesome-readme Tools section was retrieved and its badge-like dynamic SVG tools were traced to their project documentation. Five working remote recipes are now directly callable from the badge catalog: GitHub Stats Extended, GitHub PR Stats, GitHub Licenses Stats, README Typing SVG, and Telegram Card. Each returned HTTP 200 with the documented image type in a direct request. Sourcerer Hall-of-fame was reviewed but withheld because its documented endpoint failed during the TLS connection; general README generators remain manual design references rather than badge APIs.
+
+The catalog separates ordinary project badges from personal profile cards, records URL-encoding and link-destination rules, and includes the local `user-statistician` GitHub Action path with its write-permission warning. Runtime packaging now includes the catalog. The full Python suite passed 62 tests; preview CLI syntax and non-browser tests passed, while its four browser integration cases were skipped because module roots were not configured. The bundled documentation auditor reported zero errors and warnings. Remote image appearance and GitHub's live renderer were not automatically captured by these checks.
+
 ## Repeatable source checks
 
 From the repository root:
 
 ```sh
 python3 -m unittest discover -s tests -v
-python3 -m py_compile scripts/audit_readme.py tests/test_audit_readme.py
+python3 -m py_compile scripts/audit_readme.py scripts/package_skill.py tests/test_audit_readme.py tests/test_package_skill.py
 node --test tests/test_preview_readme.mjs
 node --check scripts/preview_readme.mjs
 python3 scripts/audit_readme.py --repo . \

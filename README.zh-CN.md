@@ -66,7 +66,7 @@ Complete README.md and README.zh-CN.md after the choice.
 | --- | --- |
 | **居中品牌 Hero** | 文字标题或已有 Logo、标语、有效入口与简短介绍 |
 | **工程速览** | 真实命令或 API 调用，以及预期结果 |
-| **产品演示** | 真实界面或输出截图，以及用户操作流程 |
+| **产品演示** | 产品总览主图，以及展示真实任务或功能的少量截图 |
 | **品牌叙事** | 克制的封面、项目解决的问题与实现思路 |
 | **流程导览** | 易读的流程图或架构图，以及首次使用路径 |
 
@@ -76,7 +76,9 @@ Complete README.md and README.zh-CN.md after the choice.
 
 技能复用经过确认的项目 Logo；没有 Logo 时，只显示项目名称文字。图解与生成插图围绕项目实际内容制作，概念插图会明确标注，不用于替代真实界面或性能证据。
 
-如果有可用的徽章工具，技能会自动加入经过确认的主要技术栈徽章。动态状态徽章取决于是否有实用且持续维护的数据源，呈现方式遵循所选视觉风格。
+产品演示包含专门的截图流程：选择一张主图和少量展示不同功能或任务的截图，复用已核实的素材或运行产品后截取，并搭配简短说明。其他风格也可按需在正文中加入截图展示。数量由实际内容与证据决定；没有真实界面或可视化输出的项目优先采用其他合适方向。产品截图与 README 排版预览分别验证。
+
+如果有可用的徽章工具，技能会自动加入经过确认的主要技术栈徽章。动态状态徽章取决于是否有实用且持续维护的数据源；提供方直接调用方式集中在徽章目录中，呈现方式遵循所选视觉风格。
 
 本仓库封面为概念插图，没有独立 Logo，也没有 CI、覆盖率、发布或许可徽章数据源。
 
@@ -145,14 +147,25 @@ node scripts/preview_readme.mjs \
 | [agents/openai.yaml](agents/openai.yaml) | Codex 界面元数据与默认提示词 |
 | [references/content.md](references/content.md) | 内容骨架、证据与双语决策 |
 | [references/visuals.md](references/visuals.md) | 风格选择、预览、素材与徽章规则 |
+| [references/badges.md](references/badges.md) | Shields、Badgen、GitHub Actions 与动态 SVG 的直接调用配方 |
 | [references/validation.md](references/validation.md) | 辅助工具用法与验收边界 |
 | [docs/verification.md](docs/verification.md) | 已记录的测试与隔离流程试用 |
+| [scripts/package_skill.py](scripts/package_skill.py) | 构建并验证自包含的技能运行包 |
 | [tests/test_audit_readme.py](tests/test_audit_readme.py) | 审计器 CLI 回归测试 |
 | [tests/test_preview_readme.mjs](tests/test_preview_readme.mjs) | 预览 CLI 与可选 Chromium 集成测试 |
+| [tests/test_package_skill.py](tests/test_package_skill.py) | 运行包 CLI 与引用完整性测试 |
 
 以上参考资料与验证记录均为英文。
 
 ### 验证与开发
+
+从本仓库构建经过验证的运行包：
+
+```sh
+python3 scripts/package_skill.py
+```
+
+命令会创建唯一的系统临时目录，报告输出路径、源文件哈希与包内文档审计结果。可以用 `--out /existing/parent/new-package` 指定新的或空的输出目录。发布运行包前会核对复制内容与本地引用，已有非空目录会保留。运行文件清单集中维护在打包脚本中；测试、scratch 产物与仅供开发使用的文档留在源码仓库。
 
 在仓库根目录执行审计器与预览 CLI 测试，以及预览工具语法检查：
 
