@@ -1,4 +1,4 @@
 interface:
   display_name: "Yoho Standard README"
   short_description: "先选择视觉风格，再生成可信的中英双语 README"
-  default_prompt: "Use $yoho-standard-readme to inspect this project's facts and assets, then ask me to choose a suitable visual style before editing. Offer three previews only if I ask to compare, and ask about badge treatment only when badges can show useful, verified project information."
+  default_prompt: "Use $yoho-standard-readme to inspect this project and create accurate, visually deliberate English and Simplified Chinese READMEs."

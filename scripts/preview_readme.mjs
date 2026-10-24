@@ -6,15 +6,17 @@ import { createRequire } from 'node:module';
 import { pathToFileURL } from 'node:url';
 
 const help = `Render README Markdown locally and capture desktop/mobile, light/dark views.
-Usage: node preview_readme.mjs --repo PROJECT --out OUTPUT [--module-root NODE_MODULES] [--browser CHROMIUM] FILE...
+Usage: node preview_readme.mjs --repo PROJECT --out OUTPUT [--full-page] [--module-root NODE_MODULES] [--browser CHROMIUM] FILE...
+Default captures the first screen. --full-page captures the full rendered page.
 Requires marked, sanitize-html, and playwright. Module roots may be repeated.
 Remote resources are blocked. Screenshots approximate GitHub, not its live renderer.`;
 
 function options(argv) {
-  const result = { repo: process.cwd(), roots: [], files: [] };
+  const result = { repo: process.cwd(), roots: [], files: [], fullPage: false };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--help' || arg === '-h') return null;
+    if (arg === '--full-page') { result.fullPage = true; continue; }
     if (['--repo', '--out', '--browser', '--module-root'].includes(arg)) {
       const value = argv[++i];
       if (!value || value.startsWith('--')) throw new Error(`Missing value for ${arg}`);
@@ -55,6 +57,8 @@ function typography(theme) {
 async function main() {
   const args = options(process.argv.slice(2));
   if (!args) { process.stdout.write(`${help}\n`); return; }
+  const captureMode = args.fullPage ? 'full-page' : 'first-screen';
+  const captureLabel = args.fullPage ? 'Full document' : 'First screen';
   const repo = await fs.realpath(args.repo);
   const { marked } = await dependency('marked', args.roots);
   const sanitizerModule = await dependency('sanitize-html', args.roots);
@@ -143,7 +147,7 @@ async function main() {
               visible_text_length: document.querySelector('article').innerText.trim().length,
             }));
             const filename = `${candidate.slug}-${viewport.name}-${theme}.png`;
-            await page.screenshot({ path: path.join(args.out, filename), fullPage: false });
+            await page.screenshot({ path: path.join(args.out, filename), fullPage: args.fullPage });
             candidate.views.push({ viewport: viewport.name, width: viewport.width, height: viewport.height, theme, screenshot: filename, ...inspection });
           } finally { await context.close(); }
         }
@@ -155,15 +159,16 @@ async function main() {
   }
   const report = {
     renderer: 'Local sanitized GFM approximation; not a check on GitHub itself',
-    checks_not_performed: ['semantic accuracy', 'bilingual equivalence', 'human visual review', 'external images and URLs', 'Mermaid rendering', 'content below captured first screen'],
+    capture_mode: captureMode,
+    checks_not_performed: ['semantic accuracy', 'bilingual equivalence', 'human visual review', 'external images and URLs', 'Mermaid rendering', ...(!args.fullPage ? ['content below captured first screen'] : [])],
     candidates: candidates.map(({ html, ...candidate }) => candidate),
   };
   const hasIssues = candidates.some(candidate => candidate.views.some(view => view.page_overflow || view.broken_images.length || view.visible_text_length === 0));
   report.status = hasIssues ? 'issues-found' : 'ready-for-human-review';
-  const sections = candidates.map(candidate => `<section><h2>${escape(candidate.slug)}</h2><p>Source: ${escape(path.relative(repo, candidate.file))}</p>${candidate.remote_resources_not_checked.length ? '<p>Remote images were replaced with unverified-image labels.</p>' : ''}${candidate.mermaid_not_rendered ? '<p>Mermaid remains an unrendered code block.</p>' : ''}<div class="views">${candidate.views.map(view => `<figure><a href="${escape(view.screenshot)}"><img src="${escape(view.screenshot)}" alt="${escape(`${candidate.slug}, ${view.viewport}, ${view.theme}`)}"></a><figcaption>${escape(`${view.width}px / ${view.theme}`)}${view.page_overflow || view.broken_images.length ? ' / inspect errors in report.json' : ''}</figcaption></figure>`).join('')}</div></section>`).join('');
+  const sections = candidates.map(candidate => `<section><h2>${escape(candidate.slug)}</h2><p>Source: ${escape(path.relative(repo, candidate.file))}</p>${candidate.remote_resources_not_checked.length ? '<p>Remote images were replaced with unverified-image labels.</p>' : ''}${candidate.mermaid_not_rendered ? '<p>Mermaid remains an unrendered code block.</p>' : ''}<div class="views">${candidate.views.map(view => `<figure><a href="${escape(view.screenshot)}"><img src="${escape(view.screenshot)}" alt="${escape(`${candidate.slug}, ${view.viewport}, ${view.theme}, ${captureLabel}`)}"></a><figcaption>${escape(`${view.width}px / ${view.theme} / ${captureLabel}`)}${view.page_overflow || view.broken_images.length ? ' / inspect errors in report.json' : ''}</figcaption></figure>`).join('')}</div></section>`).join('');
   await fs.writeFile(path.join(args.out, 'report.json'), JSON.stringify(report, null, 2) + '\n');
-  await fs.writeFile(path.join(args.out, 'index.html'), `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>README visual review</title><style>body{margin:24px auto;padding:0 20px;max-width:1200px;font:15px/1.5 system-ui;background:#f5f6f8;color:#222}h1{font-size:26px}h2{font-size:20px}section{border-top:1px solid #ccd1d7;margin-top:28px}.views{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}figure{margin:0}img{display:block;width:100%;height:auto;border:1px solid #ccd1d7}figcaption{padding:8px 0}@media(max-width:600px){.views{grid-template-columns:1fr}}</style><h1>README visual review</h1><p>Local GFM approximation. Review each image at full size. See report.json for capture checks and limitations.</p>${sections}</html>\n`);
-  process.stdout.write(JSON.stringify({ status: report.status, candidates: candidates.length, screenshots: candidates.length * 4, output: args.out }, null, 2) + '\n');
+  await fs.writeFile(path.join(args.out, 'index.html'), `<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>README visual review</title><style>body{margin:24px auto;padding:0 20px;max-width:1200px;font:15px/1.5 system-ui;background:#f5f6f8;color:#222}h1{font-size:26px}h2{font-size:20px}section{border-top:1px solid #ccd1d7;margin-top:28px}.views{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}figure{margin:0}img{display:block;width:100%;height:auto;border:1px solid #ccd1d7}figcaption{padding:8px 0}@media(max-width:600px){.views{grid-template-columns:1fr}}</style><h1>README visual review</h1><p>Capture: ${captureLabel}. View sizes are viewport dimensions. Local GFM approximation. Review each image at full size. See report.json for capture checks and limitations.</p>${sections}</html>\n`);
+  process.stdout.write(JSON.stringify({ status: report.status, capture_mode: captureMode, candidates: candidates.length, screenshots: candidates.length * 4, output: args.out }, null, 2) + '\n');
   if (hasIssues) process.exitCode = 1;
 }
 

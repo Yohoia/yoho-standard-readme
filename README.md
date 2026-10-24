@@ -76,7 +76,9 @@ Choose a family directly or ask the skill to recommend one. Request three first-
 
 The skill reuses a verified project logo. Without one, it uses the project name as text. Diagrams and generated illustrations follow the project's actual subject matter; conceptual artwork is identified as such and never stands in for a real interface or performance evidence.
 
-When useful project facts or status sources exist, choose **Shields.io** (`flat`, `flat-square`, `for-the-badge`), **Badgen** (classic or flat), or **native GitHub Actions badges**. Compare treatments of the same verified content, delegate the choice, or omit badges. This repository's cover is conceptual artwork; it has no separate logo or CI, coverage, release, or license badges.
+Verified primary-stack technology badges are added automatically when a working provider can represent them. Live status badges depend on useful, maintained data sources. Their presentation follows the selected visual style.
+
+This repository's cover is conceptual artwork; it has no separate logo or CI, coverage, release, or license badge sources.
 
 See the [style and asset recipes](references/visuals.md) for composition, badge providers, and validation rules.
 
@@ -89,7 +91,7 @@ The [content guide](references/content.md) adapts this baseline to libraries, CL
 ## Workflow
 
 1. **Investigate.** Read the target project's instructions, source, configuration, examples, docs, and assets. Record which claims were executed, supported by source, or remain unresolved.
-2. **Choose.** Ask for a style, a delegated recommendation, or a three-preview comparison before editing final files. Ask about badges only when they communicate useful, verifiable information.
+2. **Choose.** Resolve the visual direction before editing final files, using your existing choice, a direct selection, or a delegated recommendation. Compare three first-screen previews when requested.
 3. **Write.** Complete the English and Chinese editions with equivalent facts, prerequisites, commands, parameters, and limitations. Publish only the selected assets.
 4. **Verify.** Check structure, actual usage, bilingual equivalence, and desktop/mobile presentation in light and dark themes. Report completed checks and concrete gaps.
 
@@ -129,7 +131,7 @@ node scripts/preview_readme.mjs \
   README.md README.zh-CN.md
 ```
 
-Repeat `--module-root` for multiple module locations. Omit it or `--browser` when dependencies or a Playwright browser already resolve. Each document produces four first-screen PNGs—900px desktop and 360px mobile, each in light and dark themes—plus a shared `index.html` and `report.json`.
+Repeat `--module-root` for multiple module locations. Omit it or `--browser` when dependencies or a Playwright browser already resolve. By default, each document produces four first-screen PNGs—900px desktop and 360px mobile, each in light and dark themes—plus a shared `index.html` and `report.json`. Add `--full-page` to capture the complete rendered page in all four views, using a separate output directory to retain both modes.
 
 Exit `0`: ready for visual review; `1`: broken image, page overflow, or empty content; `2`: runtime failure. Remote images are blocked and reported as unverified; Mermaid remains unrendered. Captures approximate GitHub's GFM presentation. Inspect the images and the content below the first screen as well.
 
@@ -139,24 +141,26 @@ Full commands and checking boundaries: [validation guide](references/validation.
 
 | Path | Purpose |
 | --- | --- |
-| [SKILL.md](SKILL.md) | Main workflow and style selection |
+| [SKILL.md](SKILL.md) | Main workflow and required decision gates |
 | [agents/openai.yaml](agents/openai.yaml) | Codex interface metadata and default prompt |
 | [references/content.md](references/content.md) | Content baseline, evidence, and bilingual decisions |
-| [references/visuals.md](references/visuals.md) | Style families, assets, and badge treatments |
+| [references/visuals.md](references/visuals.md) | Style selection, preview, asset, and badge rules |
 | [references/validation.md](references/validation.md) | Helper usage and acceptance boundaries |
 | [docs/verification.md](docs/verification.md) | Recorded tests and isolated workflow trials |
 | [tests/test_audit_readme.py](tests/test_audit_readme.py) | Auditor CLI regression tests |
+| [tests/test_preview_readme.mjs](tests/test_preview_readme.mjs) | Preview CLI and optional Chromium integration tests |
 
 ### Verification and development
 
-From the checkout, run the auditor's behavior tests and the preview helper's syntax check:
+From the checkout, run the auditor and preview CLI tests and the preview helper's syntax check:
 
 ```sh
 python3 -m unittest discover -s tests -v
+node --test tests/test_preview_readme.mjs
 node --check scripts/preview_readme.mjs
 ```
 
-The [verification record](docs/verification.md) documents 26 auditor CLI tests and isolated trials covering a CLI, a library with translation migration, unavailable rendering, and document/asset defect repair. For changes to the skill's decisions, also try an isolated target project and inspect its artifacts; the auditor tests do not cover complete README redesigns.
+The preview suite skips Chromium cases unless `YOHO_PREVIEW_MODULE_ROOTS` identifies existing renderer dependencies; set `YOHO_PREVIEW_BROWSER` when a browser path is required. See the [verification record](docs/verification.md) for full test commands, auditor CLI coverage, and isolated trials covering a CLI, a library with translation migration, unavailable rendering, and document/asset defect repair. For changes to the skill's decisions, also try an isolated target project and inspect its artifacts; the helper tests do not cover complete README redesigns.
 
 Recorded tools include Python 3.12.10, Marked 17.0.5, sanitize-html 2.18.1, Playwright 1.62.1, and an installed Chromium browser. The helper scripts do not declare a minimum Python/Node support policy. These checks do not establish support for every project or environment.
 

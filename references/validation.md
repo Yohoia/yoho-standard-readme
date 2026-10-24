@@ -18,6 +18,8 @@ python3 /path/to/yoho-standard-readme/scripts/audit_readme.py --repo /path/to/pr
 
 This is a lightweight structural auditor, not a complete GitHub Markdown parser. It does not establish claims, translate prose, execute commands, resolve the whole GitHub sanitizer, or test external URLs. It reports unsupported/ambiguous references for review. Use a repository-provided Markdown checker when available.
 
+Links, anchors and runnable fenced examples share one document analysis. Fenced, indented and inline code, HTML comments, image attributes and link titles retain their own contexts; Markdown-like example text does not create references. Actual HTML links and explicit anchors remain subject to checks, including inside HTML code regions. See the [verification record](../docs/verification.md) for regression coverage and validation limits.
+
 ## Render Markdown and capture four views
 
 The optional Node helper uses `marked`, `sanitize-html`, and `playwright`. Resolve existing tools first. If dependencies are missing, use an available environment-native renderer or install dependencies only in a separate tooling directory, keeping the target project's manifests unchanged. Select an installed Chromium executable when Playwright's own browser is unavailable.
@@ -33,7 +35,19 @@ node /path/to/yoho-standard-readme/scripts/preview_readme.mjs \
   .scratch/readme-previews/c/README.md
 ```
 
-`--module-root` and `--browser` are optional when the environment already resolves packages and a Playwright browser. The helper saves desktop (900px) and mobile (360px), light and dark, first-screen PNGs, `index.html`, and a machine-readable report. Open the comparison page and show individual images at useful size. For the final README, run the helper on each completed edition and also inspect content below the first screen.
+`--module-root` and `--browser` are optional when the environment already resolves packages and a Playwright browser. By default the helper saves desktop (900px) and mobile (360px), light and dark, first-screen PNGs, `index.html`, and a machine-readable report. Use this default for comparing style proposals.
+
+For the final README, capture the complete rendered page with the same helper:
+
+```sh
+node /path/to/yoho-standard-readme/scripts/preview_readme.mjs \
+  --repo /path/to/project \
+  --out /path/to/project/.scratch/readme-full-review \
+  --full-page \
+  README.md README.zh-CN.md
+```
+
+Supply the same optional module roots and browser path when required. Each mode produces four views per document. The report and comparison page identify the capture mode; `width` and `height` remain viewport dimensions in either mode. Use separate output directories to retain both first-screen and full-page captures. Open the comparison page, follow each original-image link, and inspect long images at their native width or in readable crops. A full-page capture still requires human visual review; it does not inspect collapsed sections or interact with the document.
 
 Preview content is sanitized and served only from the target repository. Remote images are not downloaded or loaded by this helper; they are listed as unverified. Use a permitted browser check to inspect real external badges/images, or replace them with appropriate local assets when justified. Mermaid is reported as unrendered unless an external rendering path is used. The preview is not an exact reproduction of GitHub's current sanitizer, Camo image proxy, font rendering, or diagram runtime.
 

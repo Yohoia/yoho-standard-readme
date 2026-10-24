@@ -73,6 +73,218 @@ class ReadmeAuditTests(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("missing-anchor", self.codes(report))
 
+    def test_backticks_in_markdown_and_html_destinations_are_preserved(self):
+        self.write("docs/`v2`.md", "# Setup\n")
+        for kind, links in {
+            "markdown": "[Guide](docs/`v2`.md#setup) [Wrong](docs/`v2`.md#absent)",
+            "html": '<a href="docs/`v2`.md#setup">Guide</a> <a href="docs/`v2`.md#absent">Wrong</a>',
+        }.items():
+            with self.subTest(kind=kind):
+                self.write("README.md", "# Tool\n\n[中文](README.zh-CN.md)\n\n" + links + "\n")
+                code, report = self.run_audit()
+                self.assertEqual(code, 1)
+                self.assertEqual(
+                    [(item["code"], item["message"]) for item in report["issues"]],
+                    [("missing-anchor", "Unresolved local fragment: docs/`v2`.md#absent")],
+                )
+
+    def test_markdown_like_html_image_alt_is_not_a_reference(self):
+        self.write("assets/example.png", "fixture")
+        self.append("README.md", '\n<img src="assets/example.png" alt="[Guide](missing.md)">\n\n[Real](real-missing.md)\n')
+        code, report = self.run_audit()
+        self.assertEqual(code, 1)
+        self.assertEqual(
+            [(item["code"], item["message"]) for item in report["issues"]],
+            [("missing-target", "Missing local target: real-missing.md")],
+        )
+
+    def test_indented_and_html_code_links_are_not_references(self):
+        self.append("README.md", '\n    [Example](indented-missing.md)\n\n<pre><code>[Example](pre-missing.md) &lt;a href="html-missing.md"&gt;Example&lt;/a&gt;</code></pre>\n\n[Real](real-missing.md)\n')
+        code, report = self.run_audit()
+        self.assertEqual(code, 1)
+        self.assertEqual(
+            [(item["code"], item["message"]) for item in report["issues"]],
+            [("missing-target", "Missing local target: real-missing.md")],
+        )
+
+    def test_link_title_is_not_parsed_for_references(self):
+        self.append("README.md", '\n[Docs](https://example.invalid/docs "[fake](missing.md)")\n\n[Real](real-missing.md)\n')
+        code, report = self.run_audit()
+        self.assertEqual(code, 1)
+        self.assertEqual(
+            [(item["code"], item["message"]) for item in report["issues"]],
+            [("missing-target", "Missing local target: real-missing.md")],
+        )
+        self.assertEqual(report["external_targets_not_checked"], ["https://example.invalid/docs"])
+
+    def test_fences_in_html_comments_do_not_hide_following_references(self):
+        self.append("README.md", "\n<!--\n```md\n[Draft](draft-missing.md)\n-->\n\n[Real](real-missing.md)\n")
+        code, report = self.run_audit()
+        self.assertEqual(code, 1)
+        self.assertEqual(
+            [(item["code"], item["message"]) for item in report["issues"]],
+            [("missing-target", "Missing local target: real-missing.md")],
+        )
+
+    def test_escaped_opening_backtick_does_not_hide_unsupported_html(self):
+        self.append("README.md", '\n\\`<script>alert(1)</script>`\n')
+        code, report = self.run_audit()
+        self.assertEqual(code, 1)
+        self.assertEqual(
+            [(item["code"], item["message"]) for item in report["issues"]],
+            [("unsupported-html", "Unsupported README element: script")],
+        )
+
+    def test_indented_and_html_code_anchors_do_not_satisfy_fragments(self):
+        self.append("README.md", '\n    <a id="indented-phantom"></a>\n\n<pre><code>&lt;a id="html-phantom"&gt;&lt;/a&gt;</code></pre>\n\n[Indented](#indented-phantom) [HTML](#html-phantom)\n')
+        code, report = self.run_audit()
+        self.assertEqual(code, 1)
+        self.assertEqual(
+            [(item["code"], item["message"]) for item in report["issues"]],
+            [
+                ("missing-anchor", "Unresolved local fragment: #indented-phantom"),
+                ("missing-anchor", "Unresolved local fragment: #html-phantom"),
+            ],
+        )
+
+    def test_real_html_links_and_anchors_inside_pre_are_checked(self):
+        self.write("docs/guide.md", "# Guide\n")
+        for target in ("docs/guide.md", "docs/missing.md"):
+            with self.subTest(target=target):
+                self.write("README.md", '# Tool\n\n[中文](README.zh-CN.md)\n\n'
+                           f'<pre><code><a id="real" href="{target}">Guide</a></code></pre>\n\n'
+                           '[Real](#real) [Missing](#absent)\n')
+                code, report = self.run_audit()
+                self.assertEqual(code, 1)
+                expected = [("missing-anchor", "Unresolved local fragment: #absent")]
+                if target == "docs/missing.md":
+                    expected.append(("missing-target", "Missing local target: docs/missing.md"))
+                self.assertCountEqual(
+                    [(item["code"], item["message"]) for item in report["issues"]],
+                    expected,
+                )
+
+    def test_single_indented_html_line_is_code(self):
+        for example in ('<a href="indented-missing.md">Example</a>', '<script>alert(1)</script>'):
+            with self.subTest(example=example):
+                self.write("README.md", '# Tool\n\n[中文](README.zh-CN.md)\n\n'
+                           f'    {example}\n\n[Real](real-missing.md)\n')
+                code, report = self.run_audit()
+                self.assertEqual(code, 1)
+                self.assertEqual(
+                    [(item["code"], item["message"]) for item in report["issues"]],
+                    [("missing-target", "Missing local target: real-missing.md")],
+                )
+
+    def test_multiline_inline_code_does_not_create_heading_anchors(self):
+        self.append("README.md", '\nIntro `code\n## phantom\ncode`\n\n[Fake](#phantom)\n\n## Use `code`\n\n[Real](#use-code)\n')
+        code, report = self.run_audit()
+        self.assertEqual(code, 1)
+        self.assertEqual(
+            [(item["code"], item["message"]) for item in report["issues"]],
+            [("missing-anchor", "Unresolved local fragment: #phantom")],
+        )
+
+    def test_html_inside_markdown_link_labels_is_audited(self):
+        self.append("README.md", '\n[<img src="missing.png" alt="Badge"><span id="foo" class="badge">Guide</span>](https://example.invalid/docs)\n\n[Jump](#foo)\n')
+        code, report = self.run_audit()
+        self.assertEqual(code, 1)
+        self.assertCountEqual(
+            [(item["code"], item["message"]) for item in report["issues"]],
+            [
+                ("missing-target", "Missing local target: missing.png"),
+                ("stripped-html-attributes", "GitHub may strip styling on span"),
+            ],
+        )
+        self.assertEqual(report["external_targets_not_checked"], ["https://example.invalid/docs"])
+
+    def test_nested_reference_text_inside_link_label_is_not_a_reference(self):
+        self.append("README.md", '\n[Label [item][missing]](https://example.invalid/docs)\n\n[Real](real-missing.md)\n')
+        code, report = self.run_audit()
+        self.assertEqual(code, 1)
+        self.assertEqual(
+            [(item["code"], item["message"]) for item in report["issues"]],
+            [("missing-target", "Missing local target: real-missing.md")],
+        )
+        self.assertEqual(report["external_targets_not_checked"], ["https://example.invalid/docs"])
+
+    def test_reference_definition_destination_on_next_line(self):
+        self.write("target.md", "# Target\n")
+        for target in ("target.md", "missing.md"):
+            with self.subTest(target=target):
+                self.write("README.md", '# Tool\n\n[中文](README.zh-CN.md)\n\n'
+                           f'[go][x]\n\n[x]:\n  {target}\n')
+                code, report = self.run_audit()
+                expected = [] if target == "target.md" else [("missing-target", "Missing local target: missing.md")]
+                self.assertEqual(code, int(bool(expected)))
+                self.assertEqual(
+                    [(item["code"], item["message"]) for item in report["issues"]],
+                    expected,
+                )
+
+    def test_invalid_reference_definition_does_not_consume_following_blocks(self):
+        for block in ('## Live\n\n[Live](#live)', '```md example\n[Hidden](ignored.md)\n```', '```sh\nls\n```'):
+            with self.subTest(block=block):
+                self.write("README.zh-CN.md", '# 工具\n\n[English](README.md)\n'
+                           + ('\n```sh\nls\n```\n' if block.startswith('```sh') else ''))
+                self.write("README.md", '# Tool\n\n[中文](README.zh-CN.md)\n\n'
+                           f'[go][x]\n\n[x]:\n{block}\n\n[Real](real-missing.md)\n')
+                code, report = self.run_audit()
+                self.assertEqual(code, 1)
+                self.assertCountEqual(
+                    [(item["code"], item["message"]) for item in report["issues"]],
+                    [
+                        ("unresolved-reference", "Undefined link reference: x"),
+                        ("missing-target", "Missing local target: real-missing.md"),
+                    ],
+                )
+
+    def test_markdown_after_raw_html_closing_tag_needs_no_blank_line(self):
+        for tag in ("pre", "script", "style", "textarea"):
+            with self.subTest(tag=tag):
+                self.write("README.md", '# Tool\n\n[中文](README.zh-CN.md)\n\n'
+                           f'<{tag}>\nexample\n</{tag}>\n[real](missing.md)\n')
+                code, report = self.run_audit()
+                self.assertEqual(code, 1)
+                expected = [("missing-target", "Missing local target: missing.md")]
+                if tag in {"script", "style"}:
+                    expected.append(("unsupported-html", f"Unsupported README element: {tag}"))
+                self.assertCountEqual(
+                    [(item["code"], item["message"]) for item in report["issues"]],
+                    expected,
+                )
+
+    def test_html_in_markdown_image_alt_is_only_description(self):
+        self.write("real.png", "fixture")
+        self.append("README.md", '\n![<img src="phantom.png">](real.png)\n\n[Real](real-missing.md)\n')
+        code, report = self.run_audit()
+        self.assertEqual(code, 1)
+        self.assertEqual(
+            [(item["code"], item["message"]) for item in report["issues"]],
+            [("missing-target", "Missing local target: real-missing.md")],
+        )
+
+    def test_code_spans_inside_link_labels_contribute_text_only(self):
+        for code_span, fragment in (('<tag>', 'use-tag'), ('<img src="phantom.png">', 'use-img-srcphantompng')):
+            with self.subTest(code_span=code_span):
+                self.write("README.md", '# Tool\n\n[中文](README.zh-CN.md)\n\n'
+                           f'## [Use `{code_span}`](https://example.invalid/docs)\n\n[Jump](#{fragment})\n')
+                code, report = self.run_audit()
+                self.assertEqual((code, report["issues"]), (0, []))
+                self.assertEqual(report["external_targets_not_checked"], ["https://example.invalid/docs"])
+
+    def test_generic_html_blocks_end_at_blank_lines(self):
+        for tag in ("code", "div"):
+            with self.subTest(tag=tag):
+                self.write("README.md", '# Tool\n\n[中文](README.zh-CN.md)\n\n'
+                           f'<{tag}>\nexample\n</{tag}>\n[fake](fake-missing.md)\n\n[real](real-missing.md)\n')
+                code, report = self.run_audit()
+                self.assertEqual(code, 1)
+                self.assertEqual(
+                    [(item["code"], item["message"]) for item in report["issues"]],
+                    [("missing-target", "Missing local target: real-missing.md")],
+                )
+
     def test_unmatched_backtick_runs_do_not_hide_embedded_html(self):
         self.append("README.md", '\n`` literal <script>alert(1)</script> ```\n')
         code, report = self.run_audit()

@@ -91,7 +91,7 @@ Keep evidence notes outside the published README unless the source benefits read
 | --- | --- | --- |
 | Actual capability or command | File, symbol, example, or official source | Executed / supported by source / unresolved |
 
-Trace each badge to a real repository URL, workflow, or maintained data source. When more than one badge provider can represent the same verified claim, compare their actual appearance and maintenance requirements; do not use a provider to imply unsupported status. Trace package names, versions, prerequisites, and flags to manifests or implementations. Benchmarks require a real method and measured result. Logos, customer claims, sponsorship, production-readiness, and compatibility are not decorative filler.
+Trace each badge to a real source: project files for descriptive primary-stack technology badges, or a repository URL, workflow, package, license, or maintained data source for status badges. Use the [badge decision rules](visuals.md#badge-decisions-and-tools) for selection and presentation; a provider cannot establish an unsupported claim. Trace package names, versions, prerequisites, and flags to manifests or implementations. Benchmarks require a real method and measured result. Logos, customer claims, sponsorship, production-readiness, and compatibility are not decorative filler.
 
 Run an appropriate quick-start example in a suitable local or temporary environment when possible. Use existing project commands and declared dependencies. If a command would operate on real external state, choose a supported local/dry-run path or explain the execution gap. Never present a command as executed just because a process or installer started.
 

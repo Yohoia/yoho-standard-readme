@@ -76,7 +76,9 @@ Complete README.md and README.zh-CN.md after the choice.
 
 技能复用经过确认的项目 Logo；没有 Logo 时，只显示项目名称文字。图解与生成插图围绕项目实际内容制作，概念插图会明确标注，不用于替代真实界面或性能证据。
 
-有合适的项目事实或状态数据源时，可选择 **Shields.io**（`flat`、`flat-square`、`for-the-badge`）、**Badgen**（classic 或 flat），或 **GitHub Actions 原生徽章**。可以比较同一条真实内容的不同呈现、委托技能选择，也可以不用徽章。本仓库封面为概念插图，没有独立 Logo，也未放置 CI、覆盖率、发布或许可徽章。
+如果有可用的徽章工具，技能会自动加入经过确认的主要技术栈徽章。动态状态徽章取决于是否有实用且持续维护的数据源，呈现方式遵循所选视觉风格。
+
+本仓库封面为概念插图，没有独立 Logo，也没有 CI、覆盖率、发布或许可徽章数据源。
 
 构图、徽章工具与验证规则见[风格与素材说明（英文）](references/visuals.md)。
 
@@ -89,7 +91,7 @@ Complete README.md and README.zh-CN.md after the choice.
 ## 工作流程
 
 1. **调查。** 阅读目标项目的指令、源码、配置、示例、文档与素材，记录哪些陈述经过执行、获得源码支持，哪些仍未确认。
-2. **选择。** 修改正式文件前，询问风格、让技能代为推荐，或提供三份预览供比较。只有徽章能传达有用且可验证的信息时，才询问徽章呈现方式。
+2. **选择。** 修改正式文件前，通过已有选择、直接指定或委托推荐确定视觉方向。用户要求比较时，提供三份首屏预览。
 3. **写作。** 完成英文与中文版，保持事实、前置条件、命令、参数与限制对应，正式发布的素材只采用选定方向。
 4. **验证。** 检查结构、实际用法、双语对应，以及桌面和手机在亮暗主题下的呈现，列明已完成的检查与具体缺口。
 
@@ -129,7 +131,7 @@ node scripts/preview_readme.mjs \
   README.md README.zh-CN.md
 ```
 
-多个依赖目录可重复传入 `--module-root`。环境已能解析依赖或 Playwright 浏览器时，省略对应的 `--module-root` 或 `--browser`。每份文档生成四张首屏 PNG：900px 桌面与 360px 手机，各含亮色、暗色，并共享一份 `index.html` 与 `report.json`。
+多个依赖目录可重复传入 `--module-root`。环境已能解析依赖或 Playwright 浏览器时，省略对应的 `--module-root` 或 `--browser`。默认每份文档生成四张首屏 PNG：900px 桌面与 360px 手机，各含亮色、暗色，并共享一份 `index.html` 与 `report.json`。添加 `--full-page` 可生成四种视图的完整页面截图；使用独立输出目录保留两种模式的产物。
 
 退出码 `0`：可以进入视觉审阅；`1`：发现缺图、页面溢出或空内容；`2`：运行失败。远程图片被阻止加载并列为未验证，Mermaid 不会被渲染。截图近似 GitHub 的 GFM 呈现，仍需查看实际图片及首屏后的正文。
 
@@ -139,26 +141,28 @@ node scripts/preview_readme.mjs \
 
 | 路径 | 用途 |
 | --- | --- |
-| [SKILL.md](SKILL.md) | 主流程与风格选择 |
+| [SKILL.md](SKILL.md) | 主流程与必要决策关口 |
 | [agents/openai.yaml](agents/openai.yaml) | Codex 界面元数据与默认提示词 |
 | [references/content.md](references/content.md) | 内容骨架、证据与双语决策 |
-| [references/visuals.md](references/visuals.md) | 风格方案、素材与徽章呈现 |
+| [references/visuals.md](references/visuals.md) | 风格选择、预览、素材与徽章规则 |
 | [references/validation.md](references/validation.md) | 辅助工具用法与验收边界 |
 | [docs/verification.md](docs/verification.md) | 已记录的测试与隔离流程试用 |
 | [tests/test_audit_readme.py](tests/test_audit_readme.py) | 审计器 CLI 回归测试 |
+| [tests/test_preview_readme.mjs](tests/test_preview_readme.mjs) | 预览 CLI 与可选 Chromium 集成测试 |
 
 以上参考资料与验证记录均为英文。
 
 ### 验证与开发
 
-在仓库根目录执行审计器行为测试和预览工具语法检查：
+在仓库根目录执行审计器与预览 CLI 测试，以及预览工具语法检查：
 
 ```sh
 python3 -m unittest discover -s tests -v
+node --test tests/test_preview_readme.mjs
 node --check scripts/preview_readme.mjs
 ```
 
-[验证记录（英文）](docs/verification.md)包含 26 项审计器 CLI 测试，以及覆盖 CLI、带翻译迁移的库、渲染不可用、文档与素材缺陷修复的隔离试用。修改技能决策时，还应在隔离目标项目中试用并检查实际产物；审计器测试不覆盖完整 README 改写流程。
+预览测试默认跳过 Chromium 用例；通过 `YOHO_PREVIEW_MODULE_ROOTS` 指定已有渲染依赖目录后运行，需要浏览器路径时再设置 `YOHO_PREVIEW_BROWSER`。[验证记录（英文）](docs/verification.md)包含完整测试命令、审计器 CLI 覆盖范围，以及覆盖 CLI、带翻译迁移的库、渲染不可用、文档与素材缺陷修复的隔离试用。修改技能决策时，还应在隔离目标项目中试用并检查实际产物；辅助工具测试不覆盖完整 README 改写流程。
 
 记录中的工具包括 Python 3.12.10、Marked 17.0.5、sanitize-html 2.18.1、Playwright 1.62.1 和已安装的 Chromium 浏览器。辅助脚本未声明最低 Python/Node 版本支持策略，这些检查不能证明适用于所有项目或环境。
 
